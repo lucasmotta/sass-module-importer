@@ -4,6 +4,13 @@
   "main": "lib/index.js",
   "description": "Import Sass files from NPM and Bower Modules",
   "author": "Lucas Motta <mail@lucasmotta.com> (lucasmotta.com)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lucasmotta/sass-module-importer"
+  },
+  "bugs": {
+    "url": "https://github.com/lucasmotta/sass-module-importer/issues"
+  },
   "license": "MIT",
   "keywords": [
     "sass",
