@@ -1,0 +1,39 @@
+{
+  "name": "sass-module-importer",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "description": "Import Sass files from NPM and Bower Modules",
+  "author": "Lucas Motta <mail@lucasmotta.com> (lucasmotta.com)",
+  "license": "MIT",
+  "keywords": [
+    "sass",
+    "scss",
+    "importer",
+    "module",
+    "npm",
+    "node-sass",
+    "bower"
+  ],
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha --compilers js:babel/register",
+    "compile": "babel -d lib/ src/",
+    "preversion": "npm test",
+    "prepublish": "npm test && npm run compile",
+    "postpublish": "git push"
+  },
+  "devDependencies": {
+    "babel-eslint": "^3.1.20",
+    "chai": "^3.0.0",
+    "mocha": "^2.2.5",
+    "node-sass": "^3.2.0",
+    "sass-easing": "^1.0.3"
+  },
+  "dependencies": {
+    "babel": "^5.6.14",
+    "resolve": "^1.1.6",
+    "resolve-bower": "0.0.1"
+  }
+}

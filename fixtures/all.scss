@@ -1,0 +1,8 @@
+@import "dummy";
+@import "sass-easing";
+@import "quantum-colors";
+
+body {
+  transition-timing-function: $easeOutCubic;
+  background-color: $red-500;
+}
