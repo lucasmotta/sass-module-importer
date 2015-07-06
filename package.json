@@ -27,6 +27,7 @@
   "scripts": {
     "test": "mocha --compilers js:babel/register",
     "compile": "babel -d lib/ src/",
+    "pretest": "eslint src/index.js test.js",
     "preversion": "npm test",
     "prepublish": "npm test && npm run compile",
     "postpublish": "git push"

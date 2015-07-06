@@ -16,13 +16,13 @@ find.npm = function(file) {
 
   return find(npmResolve, file);
 
-}
+};
 
 find.bower = function(file) {
 
   return find(bowerResolve, file);
 
-}
+};
 
 /**
  * Look for Sass files installed through npm
