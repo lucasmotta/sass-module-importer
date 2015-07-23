@@ -1,4 +1,4 @@
-import 'babel/polyfill';
+import Map from 'es6-map';
 import npmResolve from 'resolve';
 import bowerResolve from 'resolve-bower';
 

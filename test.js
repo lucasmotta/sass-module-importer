@@ -2,7 +2,7 @@
 /*eslint-env node, mocha */
 
 
-import {expect} from 'chai';
+import { expect } from 'chai';
 import sass from 'node-sass';
 import moduleImporter from './src';
 
