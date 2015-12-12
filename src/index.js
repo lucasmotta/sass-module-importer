@@ -2,11 +2,13 @@ import Map from 'es6-map';
 import npmResolve from 'resolve';
 import bowerResolve from 'resolve-bower';
 
+let options = {};
+
 function find(resolver, file) {
 
   return new Promise((resolve) => {
 
-    resolver(file, (err, res) => resolve(err ? file : res));
+    resolver(file, options, (err, res) => resolve(err ? file : res));
 
   });
 
@@ -28,7 +30,9 @@ find.bower = function(file) {
  * Look for Sass files installed through npm
  * @return {Function}         Function to be used by node-sass importer
  */
-export default function() {
+export default function(opts) {
+
+  options = opts || options;
 
   const aliases = new Map();
 

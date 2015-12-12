@@ -1,5 +1,5 @@
-/*eslint no-unused-expressions: 0, no-var: 0 */
-/*eslint-env node, mocha */
+/* eslint no-unused-expressions: 0, no-var: 0 */
+/* eslint-env node, mocha */
 
 
 import { expect } from 'chai';
