@@ -34,6 +34,7 @@ Just for comparison, look at this mess:
 ```
 
 Assuming that the external library you are installing fits under one of those categories:
+
 1. Set a SCSS/Sass/CSS file on the "main" field of their package.json/bower.json
 2. Set a SCSS/Sass/CSS file on the "style" field of their package.json/bower.json
 3. Have a `index.css` file on the root of their module
