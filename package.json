@@ -2,6 +2,7 @@
   "name": "sass-module-importer",
   "version": "1.0.2",
   "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "description": "Import Sass files from NPM and Bower Modules",
   "author": "Lucas Motta <mail@lucasmotta.com> (lucasmotta.com)",
   "repository": {
@@ -21,30 +22,34 @@
     "node-sass",
     "bower"
   ],
-  "engines": {
-    "node": ">=0.10.0"
-  },
   "scripts": {
-    "test": "mocha --compilers js:babel/register",
-    "compile": "babel -d lib/ src/",
-    "pretest": "eslint src/index.js test.js",
+    "prebuild": "npm test",
+    "build": "rollup -c",
+    "lint": "eslint src/index.js test.js",
+    "pretest": "npm run lint",
+    "test": "BABEL_ENV=test mocha --compilers js:babel-register",
+    "prepublish": "npm run build",
     "preversion": "npm test",
-    "prepublish": "npm test && npm run compile",
-    "postpublish": "git push"
+    "version": "npm run build",
+    "postversion": "git push && git push --tags"
   },
   "devDependencies": {
-    "babel": "^5.8.3",
-    "babel-eslint": "^3.1.20",
-    "chai": "^3.0.0",
-    "eslint": "^0.24.1",
-    "eslint-config-mcsaatchi": "^1.0.2",
-    "mocha": "^2.2.5",
-    "node-sass": "^3.2.0",
-    "sass-easing": "^1.0.3"
+    "babel-preset-es2015": "^6.6.0",
+    "babel-preset-es2015-rollup": "^1.1.1",
+    "babel-register": "^6.6.5",
+    "chai": "^3.5.0",
+    "eslint": "^2.3.0",
+    "eslint-config-airbnb": "^6.1.0",
+    "mocha": "^2.4.5",
+    "node-sass": "^3.4.2",
+    "rollup": "^0.25.4",
+    "rollup-plugin-babel": "^2.4.0",
+    "rollup-plugin-commonjs": "^2.2.1"
   },
   "dependencies": {
-    "es6-map": "^0.1.1",
-    "resolve": "^1.1.6",
-    "resolve-bower": "0.0.1"
+    "es6-map": "^0.1.3",
+    "object-assign": "^4.0.1",
+    "resolve": "^1.1.7",
+    "resolve-bower": "cellvia/resolve-bower#591e359"
   }
 }

@@ -1,93 +1,132 @@
-/* eslint no-unused-expressions: 0, no-var: 0 */
-/* eslint-env node, mocha */
-
-
+/* eslint max-len: 0 */
 import { expect } from 'chai';
+import path from 'path';
 import sass from 'node-sass';
 import moduleImporter from './src';
 
 
-function getCSS(file) {
-
+function getCSS(file, data) {
   return new Promise((resolve, reject) => {
-
     sass.render({
-      file: `./fixtures/${file}`,
+      data,
+      file: file ? `./fixtures/${file}` : null,
       outputStyle: 'compressed',
-      importer: moduleImporter()
+      importer: moduleImporter({
+        basedir: path.join(__dirname, 'fixtures'),
+      }),
     }, (err, res) => err ? reject(err) : resolve(res.css.toString()));
-
   });
-
 }
 
 
 describe('sass-module-importer', () => {
-
-  it('should import npm module', (done) => {
-
-    getCSS('npm-module.scss').then((css) => {
-
-      expect(css).to.exist
-        .and.equal('body{transition-timing-function:cubic-bezier(0.215, 0.61, 0.355, 1)}\n');
-
-      done();
-
-    });
-
-  });
-
-
-  it('should import bower module', (done) => {
-
-    getCSS('bower-module.scss').then((css) => {
-
-      expect(css).to.exist
-        .and.equal('body{background-color:#e51c23}\n');
-
-      done();
-
-    });
-
-  });
-
-
   it('should import a local file', (done) => {
-
-    getCSS('local-file.scss').then((css) => {
-
-      expect(css).to.exist.and.equal('body{content:"local"}\n');
-
+    getCSS(null, '@import "fixtures/dummy";').then((css) => {
+      const expected = 'body{content:"local"}\n';
+      expect(css).to.exist.and.equal(expected);
       done();
-
     });
-
   });
 
-
-  it('should import npm, bower and local file', (done) => {
-
-    getCSS('all.scss').then((css) => {
-
-      expect(css).to.exist.and.equal('body{content:"local"}body{transition-timing-function:cubic-bezier(0.215, 0.61, 0.355, 1);background-color:#e51c23}\n');
-
+  it('should import nested files and dependencies', (done) => {
+    getCSS(null, '@import "test-npm-nested";').then((css) => {
+      const expected = `*,*:after,*:before{box-sizing:border-box}html,body{margin:0;padding:0}.test{content:"SCSS from 'npm' and from 'style' field."}.child{content:'I am being imported by another file'}.test{content:"SCSS from 'npm' and from 'main' field."}\n`;
+      expect(css).to.exist.and.equal(expected);
       done();
-
     });
-
   });
 
-
-  it('should throw error when importing inexistent module', (done) => {
-
-    getCSS('no-module.scss').catch((err) => {
-
-      expect(err).to.be.instanceof(Error);
-
+  it('should fail to import non-existing module', (done) => {
+    getCSS(null, '@import "unicorn";').catch((err) => {
+      const expected = {
+        message: 'File to import not found or unreadable: unicorn\nParent style sheet: stdin',
+      };
+      expect(err.message).to.exist.and.equal(expected.message);
       done();
-
     });
-
   });
 
+  describe('npm', () => {
+    it('should import contents of CSS from npm module using the "main" field', (done) => {
+      getCSS(null, '@import "test-npm-main-css";').then((css) => {
+        const expected = `.test{content:"CSS from 'npm' and from 'main' field."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+
+    it('should import SCSS from npm module using the "main" field', (done) => {
+      getCSS(null, '@import "test-npm-main-scss";').then((css) => {
+        const expected = `.test{content:"SCSS from 'npm' and from 'main' field."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+
+    it('should import contents of CSS from npm module using the "style" field', (done) => {
+      getCSS(null, '@import "test-npm-style-css";').then((css) => {
+        const expected = `.test{content:"CSS from 'npm' and from 'style' field."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+
+    it('should import SCSS from npm module using the "style" field', (done) => {
+      getCSS(null, '@import "test-npm-style-scss";').then((css) => {
+        const expected = `.test{content:"SCSS from 'npm' and from 'style' field."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+
+    it('should import "index.css" if the "main" and "style" are undefined', (done) => {
+      getCSS(null, '@import "test-npm-index-css";').then((css) => {
+        const expected = `.test{content:"CSS from 'npm' as index.css fallback."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+  });
+
+  describe('bower', () => {
+    it('should import contents of CSS from bower module using the "main" field', (done) => {
+      getCSS(null, '@import "test-bower-main-css";').then((css) => {
+        const expected = `.test{content:"CSS from 'bower' and from 'main' field."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+
+    it('should import SCSS from bower module using the "main" field', (done) => {
+      getCSS(null, '@import "test-bower-main-scss";').then((css) => {
+        const expected = `.test{content:"SCSS from 'bower' and from 'main' field."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+
+    it('should import contents of CSS from bower module using the "style" field', (done) => {
+      getCSS(null, '@import "test-bower-style-css";').then((css) => {
+        const expected = `.test{content:"CSS from 'bower' and from 'style' field."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+
+    it('should import SCSS from bower module using the "style" field', (done) => {
+      getCSS(null, '@import "test-bower-style-scss";').then((css) => {
+        const expected = `.test{content:"SCSS from 'bower' and from 'style' field."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+
+    it('should import "index.css" if the "main" and "style" are undefined', (done) => {
+      getCSS(null, '@import "test-bower-index-css";').then((css) => {
+        const expected = `.test{content:"CSS from 'bower' as index.css fallback."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+  });
 });

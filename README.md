@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lucasmotta/sass-module-importer.svg?branch=master)](https://travis-ci.org/lucasmotta/sass-module-importer)
+
 # sass-module-importer
 
 Simple importer for [node-sass](https://github.com/sass/node-sass) to import [npm](https://www.npmjs.com) and [bower](http://bower.io/search/) modules.
@@ -31,6 +33,13 @@ Just for comparison, look at this mess:
 // :(
 ```
 
+Assuming that the external library you are installing fits under one of those categories:
+1. Set a SCSS/Sass/CSS file on the "main" field of their package.json/bower.json
+2. Set a SCSS/Sass/CSS file on the "style" field of their package.json/bower.json
+3. Have a `index.css` file on the root of their module
+
+This tool it will also inline CSS files for you, since Sass [cannot import plain CSS files yet](https://github.com/sass/sass/issues/556). So if the dependency you are using exports a CSS file, it will work too.
+
 ## How-to
 
 ### install
@@ -63,6 +72,12 @@ gulp.task('style', function() {
     .pipe(sass({ importer: moduleImporter() }))
     .pipe(gulp.dest('./public/css'));
 });
+```
+
+## Options
+You can pass any option supported by [node-resolve](https://github.com/substack/node-resolve#resolveid-opts-cb) directly, like this:
+```js
+moduleImporter({ basedir: path.join(__dirname, 'another-folder') });
 ```
 
 ## Tests

@@ -1,4 +1,9 @@
 ---
-extends: "mcsaatchi/es6"
+extends: "airbnb/base"
 env:
   mocha: true
+rules:
+  no-param-reassign:
+    - 2
+    -
+      props: false
