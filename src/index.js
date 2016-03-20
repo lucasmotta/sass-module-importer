@@ -14,7 +14,7 @@ let options;
  */
 const filter = (pkg) => {
   if (!pkg.main || (pkg.main && !pkg.main.match(/\.s?[c|a]ss$/g))) {
-    pkg.main = pkg.style || 'index.css';
+    pkg.main = pkg.style || pkg['main.scss'] || pkg['main.sass'] || 'index.css';
   }
   return pkg;
 };
@@ -40,14 +40,14 @@ const bower = (file) => find(bowerResolve, file);
  * Read file's content
  */
 const read = ({ url, prev, resolved }) => new Promise((resolve, reject) => {
-  if (url.match(/\.s[c|a]ss/g) || !resolved) {
+  if (url.match(/\.css$/g)) {
+    fs.readFile(url, 'utf8', (err, contents) => err ? reject(err) : resolve({ contents }));
+  } else {
     let resolvedURL = url;
-    if (prev && prev !== 'stdin' && !path.isAbsolute(url)) {
+    if (!resolved && prev && prev !== 'stdin' && !path.isAbsolute(url)) {
       resolvedURL = path.resolve(path.dirname(prev), url);
     }
     resolve({ file: resolvedURL });
-  } else {
-    fs.readFile(url, 'utf8', (err, contents) => err ? reject(err) : resolve({ contents }));
   }
 });
 
