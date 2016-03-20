@@ -1,7 +1,0 @@
-{
-  "name": "sass-module-importer",
-  "private": true,
-  "devDependencies": {
-    "quantum-colors": "~1.0.1"
-  }
-}
