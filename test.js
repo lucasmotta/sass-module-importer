@@ -14,7 +14,13 @@ function getCSS(file, data) {
       importer: moduleImporter({
         basedir: path.join(__dirname, 'fixtures'),
       }),
-    }, (err, res) => err ? reject(err) : resolve(res.css.toString()));
+    }, (err, res) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(res.css.toString());
+      }
+    });
   });
 }
 
