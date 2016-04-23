@@ -41,7 +41,13 @@ const bower = (file) => find(bowerResolve, file);
  */
 const read = ({ url, prev, resolved }) => new Promise((resolve, reject) => {
   if (url.match(/\.css$/g)) {
-    fs.readFile(url, 'utf8', (err, contents) => err ? reject(err) : resolve({ contents }));
+    fs.readFile(url, 'utf8', (err, contents) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ contents });
+      }
+    });
   } else {
     let resolvedURL = url;
     if (!resolved && prev && prev !== 'stdin' && !path.isAbsolute(url)) {
