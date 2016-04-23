@@ -1,8 +1,8 @@
 /* eslint max-len: 0 */
-import { expect } from 'chai';
-import path from 'path';
-import sass from 'node-sass';
-import moduleImporter from './src';
+const expect = require('chai').expect;
+const path = require('path');
+const sass = require('node-sass');
+const moduleImporter = require('./lib');
 
 
 function getCSS(file, data) {

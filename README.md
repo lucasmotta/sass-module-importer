@@ -52,8 +52,8 @@ npm install sass-module-importer --save-dev
 ### use the importer with [node-sass](https://github.com/sass/node-sass) `>= v3.0.0`
 
 ```js
-var sass = require('node-sass');
-var moduleImporter = require('sass-module-importer');
+import sass from 'node-sass';
+import moduleImporter from 'sass-module-importer';
 
 sass.render({
   file: './source/css/app.scss',
@@ -64,11 +64,11 @@ sass.render({
 ### use the importer with [gulp-sass](https://github.com/dlmanning/gulp-sass)
 
 ```js
-var gulp = require('gulp');
-var sass = require('gulp-sass');
-var moduleImporter = require('sass-module-importer');
+import gulp from 'gulp';
+import sass from 'gulp-sass';
+import moduleImporter from 'sass-module-importer';
 
-gulp.task('style', function() {
+gulp.task('style', () => {
   return gulp.src('./source/css/app.scss')
     .pipe(sass({ importer: moduleImporter() }))
     .pipe(gulp.dest('./public/css'));
@@ -89,4 +89,4 @@ If you discover a bug, please raise an issue on Github. https://github.com/lucas
 
 ## Contributors
 The source code and the test are written in ES6 (ECMAScript 2015).  
-[Babel](https://babeljs.io) is being used to compile to ES5 before the package is published to npm.
+[Buble](https://gitlab.com/Rich-Harris/buble) is being used to compile to ES5 before the package is published to npm.
