@@ -5,55 +5,75 @@ import assign from 'object-assign';
 import npmResolve from 'resolve';
 import bowerResolve from 'resolve-bower';
 
-/**
- * Check for the "main" field to see if it contains any css/scss/sass
- * If not, try to use the "style" field from package.json - and if that fails
- * too, defaults to "index.css"
- */
-const filter = (pkg) => {
-  if (!pkg.main || (pkg.main && !pkg.main.match(/\.s?[c|a]ss$/g))) {
-    pkg.main = pkg.style || pkg['main.scss'] || pkg['main.sass'] || 'index.css';
+class ModuleImporter {
+  constructor(opts) {
+    this.aliases = new Map();
+    this.options = assign({}, { packageFilter: this.filter }, opts);
   }
-  return pkg;
-};
 
-/**
- * Simple Promise wrapper to resolve the npm/bower modules
- */
-const find = (resolver, { url, prev, resolved }, options) => new Promise((resolve) => {
-  if (resolved) {
-    resolve({ url, prev, resolved }, options);
-  } else {
-    resolver(url, options, (err, res) => {
-      resolve({ url: (err ? url : res), prev, resolved: !err }, options);
-    });
+  resolve({ url, prev }) {
+    if (this.aliases.has(url)) {
+      return Promise.resolve(this.aliases.get(url));
+    }
+
+    return Promise.resolve({ url, prev })
+      .then(file => this.npm(file))
+      .then(file => this.bower(file))
+      .then(file => this.read(file))
+      .then((res) => {
+        this.aliases.set(url, res);
+        return res;
+      });
   }
-});
 
-const npm = (file, options) => find(npmResolve, file, options);
+  filter(pkg) {
+    if (!pkg.main || (pkg.main && !pkg.main.match(/\.s?[c|a]ss$/g))) {
+      pkg.main = pkg.style || pkg['main.scss'] || pkg['main.sass'] || 'index.css';
+    }
+    return pkg;
+  }
 
-const bower = (file, options) => find(bowerResolve, file, options);
-
-/**
- * Read file's content
- */
-const read = ({ url, prev, resolved }) => new Promise((resolve, reject) => {
-  if (url.match(/\.css$/g)) {
-    fs.readFile(url, 'utf8', (err, contents) => {
-      if (err) {
-        reject(err);
+  find(resolver, { url, prev, resolved }) {
+    return new Promise((resolve) => {
+      if (resolved) {
+        resolve({ url, prev, resolved });
       } else {
-        resolve({ contents });
+        resolver(url, this.options, (err, res) => {
+          resolve({ url: (err ? url : res), prev, resolved: !err });
+        });
       }
     });
-  } else {
-    let resolvedURL = url;
-    if (!resolved && prev && prev !== 'stdin' && !path.isAbsolute(url)) {
-      resolvedURL = path.resolve(path.dirname(prev), url);
-    }
-    resolve({ file: resolvedURL });
   }
-});
+
+  read({ url, prev, resolved }) {
+    return new Promise((resolve, reject) => {
+      if (url.match(/\.css$/g)) {
+        fs.readFile(url, 'utf8', (err, contents) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({ contents });
+          }
+        });
+      } else {
+        let resolvedURL = url;
+        if (!resolved && prev && prev !== 'stdin' && !path.isAbsolute(url)) {
+          resolvedURL = path.resolve(path.dirname(prev), url);
+        }
+        resolve({ file: resolvedURL });
+      }
+    });
+  }
+
+  npm(file) {
+    return this.find(npmResolve, file);
+  }
+
+  bower(file) {
+    return this.find(bowerResolve, file);
+  }
+}
+
 
 /**
  * Look for Sass files installed through npm
@@ -62,18 +82,9 @@ const read = ({ url, prev, resolved }) => new Promise((resolve, reject) => {
  * @return {Function}         Function to be used by node-sass importer
  */
 export default function (opts) {
-  const options = assign({}, { packageFilter: filter }, opts);
-
-  const aliases = new Map();
+  const importer = new ModuleImporter(opts);
 
   return (url, prev, done) => {
-    if (aliases.has(url)) {
-      done(aliases.get(url));
-    } else {
-      npm({ url, prev }, options).then(bower).then(read).then((res) => {
-        aliases.set(url, res);
-        done(res);
-      });
-    }
+    importer.resolve({ url, prev }).then(done);
   };
 }
