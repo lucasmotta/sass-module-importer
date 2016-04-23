@@ -5,8 +5,6 @@ import assign from 'object-assign';
 import npmResolve from 'resolve';
 import bowerResolve from 'resolve-bower';
 
-let options;
-
 /**
  * Check for the "main" field to see if it contains any css/scss/sass
  * If not, try to use the "style" field from package.json - and if that fails
@@ -22,19 +20,19 @@ const filter = (pkg) => {
 /**
  * Simple Promise wrapper to resolve the npm/bower modules
  */
-const find = (resolver, { url, prev, resolved }) => new Promise((resolve) => {
+const find = (resolver, { url, prev, resolved }, options) => new Promise((resolve) => {
   if (resolved) {
-    resolve({ url, prev, resolved });
+    resolve({ url, prev, resolved }, options);
   } else {
     resolver(url, options, (err, res) => {
-      resolve({ url: (err ? url : res), prev, resolved: !err });
+      resolve({ url: (err ? url : res), prev, resolved: !err }, options);
     });
   }
 });
 
-const npm = (file) => find(npmResolve, file);
+const npm = (file, options) => find(npmResolve, file, options);
 
-const bower = (file) => find(bowerResolve, file);
+const bower = (file, options) => find(bowerResolve, file, options);
 
 /**
  * Read file's content
@@ -64,7 +62,7 @@ const read = ({ url, prev, resolved }) => new Promise((resolve, reject) => {
  * @return {Function}         Function to be used by node-sass importer
  */
 export default function (opts) {
-  options = assign({}, { packageFilter: filter }, opts);
+  const options = assign({}, { packageFilter: filter }, opts);
 
   const aliases = new Map();
 
@@ -72,7 +70,7 @@ export default function (opts) {
     if (aliases.has(url)) {
       done(aliases.get(url));
     } else {
-      npm({ url, prev }).then(bower).then(read).then((res) => {
+      npm({ url, prev }, options).then(bower).then(read).then((res) => {
         aliases.set(url, res);
         done(res);
       });
