@@ -39,10 +39,11 @@ Assuming that the external library you are installing fits under one of those ca
 2. Set a SCSS/Sass/CSS file on the "style" field of their package.json/bower.json
 3. Have a `index.css` file on the root of their module
 
-Even if it doesn't, npm will resolve the pathsif you have installed it via npm, so you can do things like this:
+Even if it doesn't, npm will resolve the paths if you have installed it via npm, so you can do things like this:
 
 ```scss
 @import "material-colors/dist/colors.scss";
+// :)
 ```
 
 This tool it will also inline CSS files for you, since Sass [cannot import plain CSS files yet](https://github.com/sass/sass/issues/556). So if the dependency you are using exports a CSS file, it will work too.
