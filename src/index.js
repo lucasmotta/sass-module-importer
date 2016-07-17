@@ -26,6 +26,33 @@ class ModuleImporter {
       });
   }
 
+  resolveSass({ url, prev }) {
+    const filePath = path.resolve(prev.replace(path.sep + path.basename(prev), ''), url);
+    const extensions = ['.sass', '.scss', '.css'];
+    const len = extensions.length;
+    let i = 0;
+    let ext = extensions[i];
+    let filePathWithExt;
+
+    return new Promise((resolve) => {
+      function handler(err, stat) {
+        ext = extensions[++i];
+
+        if (err || !stat || !stat.isFile()) {
+          if (i < len) {
+            fs.stat(filePathWithExt = filePath + ext, handler);
+          } else {
+            resolve(false);
+          }
+        } else {
+          resolve(filePathWithExt);
+        }
+      }
+
+      fs.stat(filePathWithExt = filePath + ext, handler);
+    });
+  }
+
   filter(pkg) {
     if (!pkg.main || (pkg.main && !pkg.main.match(/\.s?[c|a]ss$/g))) {
       pkg.main = pkg.style || pkg['main.scss'] || pkg['main.sass'] || 'index.css';
@@ -37,9 +64,30 @@ class ModuleImporter {
     return new Promise((resolve) => {
       if (resolved) {
         resolve({ url, prev, resolved });
+      } else
+      if (/^(\.|\/)/.test(url)) {
+        resolve({ url, prev, resolved: true });
       } else {
-        resolver(url, this.options, (err, res) => {
-          resolve({ url: (err ? url : res), prev, resolved: !err });
+        // console.log('start resolve');
+        this.resolveSass({ url, prev }).then((resolvedPath) => {
+          if (resolvedPath) {
+            resolve({ url, prev, resolved: true });
+          } else {
+            const moduleName = url.split(path.sep)[0];
+
+            resolver(moduleName, this.options, (err, res) => {
+              let result = res;
+
+              if (!err && url !== moduleName) {
+                result = url.replace(
+                  moduleName,
+                  result.replace(/(node_modules|bower_components)\/([^\/]*)(\/.*|)$/, '$1/$2')
+                );
+              }
+
+              resolve({ url: (err ? url : result), prev, resolved: !err });
+            });
+          }
         });
       }
     });

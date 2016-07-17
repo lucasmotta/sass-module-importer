@@ -92,6 +92,14 @@ describe('sass-module-importer', () => {
         done();
       });
     });
+
+    it('should import subfile from module', (done) => {
+      getCSS(null, '@import "test-npm-subpath/assets/styles";').then((css) => {
+        const expected = `.test{content:"Now you can load assets from modules"}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
   });
 
   describe('bower', () => {
@@ -130,6 +138,14 @@ describe('sass-module-importer', () => {
     it('should import "index.css" if the "main" and "style" are undefined', (done) => {
       getCSS(null, '@import "test-bower-index-css";').then((css) => {
         const expected = `.test{content:"CSS from 'bower' as index.css fallback."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+
+    it('should import subfile from module', (done) => {
+      getCSS(null, '@import "test-bower-subpath/assets/styles";').then((css) => {
+        const expected = `.test{content:"Now you can load assets from modules"}\n`;
         expect(css).to.exist.and.equal(expected);
         done();
       });

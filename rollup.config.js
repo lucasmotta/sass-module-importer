@@ -5,8 +5,8 @@ import resolve from 'rollup-plugin-node-resolve';
 
 export default {
   moduleName: 'sass-module-importer',
-  entry: './src/index.js',
-  dest: './lib/index.js',
+  entry: 'src/index.js',
+  dest: 'lib/index.js',
   plugins: [
     json(),
     buble(),
