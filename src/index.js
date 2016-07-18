@@ -54,7 +54,7 @@ class ModuleImporter {
   }
 
   filter(pkg) {
-    if (!pkg.main || (pkg.main && !pkg.main.match(/\.s?[c|a]ss$/g))) {
+    if (!pkg.main) {
       pkg.main = pkg.style || pkg['main.scss'] || pkg['main.sass'] || 'index.css';
     }
     return pkg;
@@ -68,7 +68,6 @@ class ModuleImporter {
       if (/^(\.|\/)/.test(url)) {
         resolve({ url, prev, resolved: true });
       } else {
-        // console.log('start resolve');
         this.resolveSass({ url, prev }).then((resolvedPath) => {
           if (resolvedPath) {
             resolve({ url, prev, resolved: true });
