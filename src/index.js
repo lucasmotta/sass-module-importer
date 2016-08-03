@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 import Map from 'es6-map';
 import assign from 'object-assign';
 import npmResolve from 'resolve';
@@ -11,12 +10,12 @@ class ModuleImporter {
     this.options = assign({}, { packageFilter: this.filter }, opts);
   }
 
-  resolve({ url, prev }) {
+  resolve({ url }) {
     if (this.aliases.has(url)) {
       return Promise.resolve(this.aliases.get(url));
     }
 
-    return Promise.resolve({ url, prev })
+    return Promise.resolve({ url })
       .then(file => this.npm(file))
       .then(file => this.bower(file))
       .then(file => this.read(file))
@@ -33,19 +32,23 @@ class ModuleImporter {
     return pkg;
   }
 
-  find(resolver, { url, prev, resolved }) {
+  find(resolver, { url, resolved }) {
     return new Promise((resolve) => {
       if (resolved) {
-        resolve({ url, prev, resolved });
+        resolve({ url, resolved });
       } else {
         resolver(url, this.options, (err, res) => {
-          resolve({ url: (err ? url : res), prev, resolved: !err });
+          resolve({ url: (err ? url : res), resolved: !err });
         });
       }
     });
   }
 
-  read({ url, prev, resolved }) {
+  read({ url, resolved }) {
+    if (!resolved) {
+      return null;
+    }
+
     return new Promise((resolve, reject) => {
       if (url.match(/\.css$/g)) {
         fs.readFile(url, 'utf8', (err, contents) => {
@@ -56,11 +59,7 @@ class ModuleImporter {
           }
         });
       } else {
-        let resolvedURL = url;
-        if (!resolved && prev && prev !== 'stdin' && !path.isAbsolute(url)) {
-          resolvedURL = path.resolve(path.dirname(prev), url);
-        }
-        resolve({ file: resolvedURL });
+        resolve({ file: url });
       }
     });
   }
@@ -85,6 +84,6 @@ export default function (opts) {
   const importer = new ModuleImporter(opts);
 
   return (url, prev, done) => {
-    importer.resolve({ url, prev }).then(done);
+    importer.resolve({ url }).then(done);
   };
 }
