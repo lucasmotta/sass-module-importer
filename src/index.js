@@ -11,7 +11,7 @@ class ModuleImporter {
     this.options = assign({}, { packageFilter: this.filter }, opts);
   }
 
-  resolve({ url, prev }) {
+  resolve({ url, prev }, options) {
     if (this.aliases.has(url)) {
       return Promise.resolve(this.aliases.get(url));
     }
@@ -19,7 +19,7 @@ class ModuleImporter {
     return Promise.resolve({ url, prev })
       .then(file => this.npm(file))
       .then(file => this.bower(file))
-      .then(file => this.read(file))
+      .then(file => this.read(file, options))
       .then((res) => {
         this.aliases.set(url, res);
         return res;
@@ -45,9 +45,9 @@ class ModuleImporter {
     });
   }
 
-  read({ url, prev, resolved }) {
+  read({ url, prev, resolved }, options = {}) {
     return new Promise((resolve, reject) => {
-      if (url.match(/\.css$/g)) {
+      if (path.extname(url) === 'css') {
         fs.readFile(url, 'utf8', (err, contents) => {
           if (err) {
             reject(err);
@@ -56,13 +56,66 @@ class ModuleImporter {
           }
         });
       } else {
-        let resolvedURL = url;
-        if (!resolved && prev && prev !== 'stdin' && !path.isAbsolute(url)) {
-          resolvedURL = path.resolve(path.dirname(prev), url);
+        if (resolved || path.isAbsolute(url)) {
+          resolve({ file: url });
+        } else {
+          const sassNames = this.getSassNames(url);
+          const cwd = process.cwd();
+
+          let dirname = path.dirname(url);
+          dirname += dirname ? '/' : '';
+
+          let includePaths = (prev && prev !== 'stdin' ? [path.dirname(prev)] : []);
+          includePaths = includePaths.concat(options.includePaths || []);
+
+          const checkNextPath = (err) => {
+            const currentPath = includePaths.shift();
+            if (!currentPath) {
+              reject(err || new Error(`Could not find ${url}`));
+            } else {
+              sassNames.reduce((chain, name) => {
+                const fileExists = new Promise(resolveName => {
+                  const resolvedUrl = path.resolve(cwd, currentPath, dirname + name);
+                  fs.stat(resolvedUrl, errName => {
+                    if (errName) {
+                      resolveName(errName);
+                    } else {
+                      resolveName(resolvedUrl);
+                    }
+                  });
+                });
+
+                return chain.then(resolvedUrl =>
+                  (resolvedUrl instanceof Error ? fileExists : resolvedUrl)
+                );
+              }, Promise.resolve())
+                .then(resolvedUrl => {
+                  if (resolvedUrl instanceof Error) {
+                    checkNextPath(resolvedUrl);
+                  } else {
+                    resolve(resolvedUrl);
+                  }
+                });
+            }
+          };
+
+          checkNextPath();
         }
-        resolve({ file: resolvedURL });
       }
     });
+  }
+
+  getSassNames(url) {
+    const basename = path.basename(url);
+    if (path.extname(url) !== '') {
+      return [basename];
+    }
+    return [
+      `${basename}.scss`,
+      `${basename}.sass`,
+      `_${basename}.scss`,
+      `_${basename}.sass`,
+    ];
   }
 
   npm(file) {
@@ -84,7 +137,8 @@ class ModuleImporter {
 export default function (opts) {
   const importer = new ModuleImporter(opts);
 
-  return (url, prev, done) => {
-    importer.resolve({ url, prev }).then(done);
+  return function doImport(url, prev, done) {
+    const { includePaths } = this.options;
+    importer.resolve({ url, prev }, { includePaths }).then(done);
   };
 }
