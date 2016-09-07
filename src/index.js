@@ -27,8 +27,15 @@ class ModuleImporter {
   }
 
   filter(pkg) {
-    if (!pkg.main || (pkg.main && !pkg.main.match(/\.s?[c|a]ss$/g))) {
-      pkg.main = pkg.style || pkg['main.scss'] || pkg['main.sass'] || 'index.css';
+    const regex = /\.s?[c|a]ss$/g;
+    if (!pkg.main ||
+       (typeof pkg.main !== 'string') ||
+       (pkg.main && !pkg.main.match(regex))) {
+      if (typeof pkg.main === 'object') {
+        pkg.main = pkg.main.find(elem => elem.match(regex));
+      } else {
+        pkg.main = pkg.style || pkg['main.scss'] || pkg['main.sass'] || 'index.css';
+      }
     }
     return pkg;
   }
