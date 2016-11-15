@@ -41,6 +41,7 @@ Assuming that the external library you are installing fits under one of those ca
 
 This tool it will also inline CSS files for you, since Sass [cannot import plain CSS files yet](https://github.com/sass/sass/issues/556). So if the dependency you are using exports a CSS file, it will work too.
 
+
 ## How-to
 
 ### install
@@ -73,6 +74,19 @@ gulp.task('style', () => {
     .pipe(sass({ importer: moduleImporter() }))
     .pipe(gulp.dest('./public/css'));
 });
+```
+
+### import partials
+
+If you need to import partials from your external module, just use the path for the partial you want to import. To import the following file:
+```
+node_modules/module-name/folder/to/_file.scss
+```
+
+Import like this anywhere:
+
+```scss
+@import "module-name/folder/to/_file.scss"
 ```
 
 ## Options
