@@ -94,14 +94,6 @@ describe('sass-module-importer', () => {
       });
     });
 
-    it('should import the first style file from the "main" option if it is an object', (done) => {
-      getCSS(null, '@import "test-npm-main-array";').then((css) => {
-        const expected = `.test{content:"CSS from first file in 'main' array"}\n`;
-        expect(css).to.exist.and.equal(expected);
-        done();
-      });
-    });
-
     it('should import a partial from a npm module', (done) => {
       getCSS(null, '@import "test-normalize/normalize/_body.scss";').then((css) => {
         const expected = 'html,body{margin:0;padding:0}\n';
