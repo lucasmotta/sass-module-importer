@@ -42,6 +42,14 @@ describe('sass-module-importer', () => {
     });
   });
 
+  it('should import nested files or dependencies which have matching nested names', (done) => {
+    getCSS(null, '@import "test-npm-nested";@import "test-npm-nested-multiple";').then((css) => {
+      const expected = `*,*:after,*:before{box-sizing:border-box}html,body{margin:0;padding:0}.test{content:"SCSS from 'npm' and from 'style' field."}.child{content:'I am being imported by another file'}.test{content:"SCSS from 'npm' and from 'main' field."}.child2{content:'I am also being imported by another file'}.test2{content:"MORE SCSS from 'npm' and from 'main' field."}\n`;
+      expect(css).to.exist.and.equal(expected);
+      done();
+    });
+  });
+
   it('should fail to import non-existing module', (done) => {
     getCSS(null, '@import "unicorn";').catch((err) => {
       const expected = {

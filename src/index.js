@@ -21,7 +21,9 @@ class ModuleImporter {
       .then(file => this.bower(file))
       .then(file => this.read(file))
       .then((res) => {
-        this.aliases.set(url, res);
+        if (res.resolved) {
+          this.aliases.set(url, res);
+        }
         return res;
       });
   }
