@@ -85,6 +85,8 @@ export default function (opts) {
   const importer = new ModuleImporter(opts);
 
   return (url, prev, done) => {
-    importer.resolve({ url, prev }).then(done);
+    importer.resolve({ url, prev })
+      .then(done)
+      .catch(err => setImmediate(() => { throw err; }));
   };
 }
