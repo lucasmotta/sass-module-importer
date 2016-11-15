@@ -1,0 +1,7 @@
+{
+  "name": "test-bower-main-array",
+  "main": [
+    "test.scss",
+    "main.scss"
+  ]
+}

@@ -92,6 +92,14 @@ describe('sass-module-importer', () => {
         done();
       });
     });
+
+    it('should import the first style file from the "main" option if it is an object', (done) => {
+      getCSS(null, '@import "test-npm-main-array";').then((css) => {
+        const expected = `.test{content:"CSS from first file in 'main' array"}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
   });
 
   describe('bower', () => {
@@ -130,6 +138,14 @@ describe('sass-module-importer', () => {
     it('should import "index.css" if the "main" and "style" are undefined', (done) => {
       getCSS(null, '@import "test-bower-index-css";').then((css) => {
         const expected = `.test{content:"CSS from 'bower' as index.css fallback."}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+
+    it('should import the first style file from the "main" option if it is an object', (done) => {
+      getCSS(null, '@import "test-bower-main-array";').then((css) => {
+        const expected = `.test{content:"CSS from first file in 'main' array"}\n`;
         expect(css).to.exist.and.equal(expected);
         done();
       });
