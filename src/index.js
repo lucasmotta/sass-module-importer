@@ -12,8 +12,10 @@ class ModuleImporter {
   }
 
   resolve({ url, prev }) {
-    if (this.aliases.has(url)) {
-      return Promise.resolve(this.aliases.get(url));
+    const fullPath = prev === 'stdin' ? url : path.resolve(path.dirname(prev), url);
+
+    if (this.aliases.has(fullPath)) {
+      return Promise.resolve(this.aliases.get(fullPath));
     }
 
     return Promise.resolve({ url, prev })
@@ -21,7 +23,9 @@ class ModuleImporter {
       .then(file => this.bower(file))
       .then(file => this.read(file))
       .then((res) => {
-        this.aliases.set(url, res);
+        if (res) {
+          this.aliases.set(fullPath, res);
+        }
         return res;
       });
   }
@@ -34,7 +38,7 @@ class ModuleImporter {
       if (typeof pkg.main === 'object') {
         pkg.main = pkg.main.find(elem => elem.match(regex));
       } else {
-        pkg.main = pkg.style || pkg['main.scss'] || pkg['main.sass'] || 'index.css';
+        pkg.main = pkg.style || pkg.sass || pkg['main.scss'] || pkg['main.sass'] || 'index.css';
       }
     }
     return pkg;
@@ -54,20 +58,24 @@ class ModuleImporter {
 
   read({ url, prev, resolved }) {
     return new Promise((resolve, reject) => {
-      if (url.match(/\.css$/g)) {
-        fs.readFile(url, 'utf8', (err, contents) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve({ contents });
-          }
-        });
+      if (!resolved) {
+        resolve();
       } else {
-        let resolvedURL = url;
-        if (!resolved && prev && prev !== 'stdin' && !path.isAbsolute(url)) {
-          resolvedURL = path.resolve(path.dirname(prev), url);
+        if (url.match(/\.css$/g)) {
+          fs.readFile(url, 'utf8', (err, contents) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve({ contents });
+            }
+          });
+        } else {
+          let resolvedURL = url;
+          if (!resolved && prev && prev !== 'stdin' && !path.isAbsolute(url)) {
+            resolvedURL = path.resolve(path.dirname(prev), url);
+          }
+          resolve({ file: resolvedURL });
         }
-        resolve({ file: resolvedURL });
       }
     });
   }

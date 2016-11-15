@@ -11,6 +11,7 @@ function getCSS(file, data) {
       data,
       file: file ? `./fixtures/${file}` : null,
       outputStyle: 'compressed',
+      includePaths: [path.join(__dirname, 'fixtures')],
       importer: moduleImporter({
         basedir: path.join(__dirname, 'fixtures'),
       }),
@@ -27,7 +28,7 @@ function getCSS(file, data) {
 
 describe('sass-module-importer', () => {
   it('should import a local file', (done) => {
-    getCSS(null, '@import "fixtures/dummy";').then((css) => {
+    getCSS(null, '@import "dummy";').then((css) => {
       const expected = 'body{content:"local"}\n';
       expect(css).to.exist.and.equal(expected);
       done();
@@ -100,6 +101,14 @@ describe('sass-module-importer', () => {
         done();
       });
     });
+
+    it('should import a partial from a npm module', (done) => {
+      getCSS(null, '@import "test-normalize/normalize/_body.scss";').then((css) => {
+        const expected = 'html,body{margin:0;padding:0}\n';
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
   });
 
   describe('bower', () => {
@@ -146,6 +155,24 @@ describe('sass-module-importer', () => {
     it('should import the first style file from the "main" option if it is an object', (done) => {
       getCSS(null, '@import "test-bower-main-array";').then((css) => {
         const expected = `.test{content:"CSS from first file in 'main' array"}\n`;
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+  });
+
+  describe('module vs local file', () => {
+    it('should import external colors module', (done) => {
+      getCSS(null, '@import "colors";').then((css) => {
+        const expected = '.colors{content:"Colors library"}\n';
+        expect(css).to.exist.and.equal(expected);
+        done();
+      });
+    });
+
+    it('should import local colors if using relative path', (done) => {
+      getCSS(null, '@import "./colors";').then((css) => {
+        const expected = '.red{color:red}.green{color:green}\n';
         expect(css).to.exist.and.equal(expected);
         done();
       });
