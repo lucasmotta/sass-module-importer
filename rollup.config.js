@@ -19,6 +19,6 @@ export default {
     }),
   ],
   format: 'cjs',
-  external: ['es6-map', 'object-assign', 'resolve', 'resolve-bower'],
+  external: ['es6-map', 'object-assign', 'resolve', 'resolve-bower', 'glob'],
   onwarn: () => null,
 };
