@@ -1,4 +1,5 @@
 import fs from 'fs';
+import glob from 'glob';
 import path from 'path';
 import Map from 'es6-map';
 import assign from 'object-assign';
@@ -13,9 +14,22 @@ class ModuleImporter {
 
   resolve({ url, prev }) {
     const fullPath = prev === 'stdin' ? url : path.resolve(path.dirname(prev), url);
+    const extname = path.extname(fullPath);
+
+    if (extname === '.js') {
+      return Promise.resolve({ contents: '' });
+    }
 
     if (this.aliases.has(fullPath)) {
       return Promise.resolve(this.aliases.get(fullPath));
+    }
+
+    const dirName = path.dirname(fullPath);
+    const fileName = `?(_)${path.basename(fullPath)}.+(scss|sass|css)`;
+    const matches = glob.sync(path.join(dirName, fileName));
+
+    if (matches.length > 0) {
+      return Promise.resolve({ file: fullPath });
     }
 
     return Promise.resolve({ url, prev })
@@ -31,7 +45,7 @@ class ModuleImporter {
   }
 
   filter(pkg) {
-    const regex = /\.s?[c|a]ss$/g;
+    const regex = /\.s?[c|a]ss$/;
     if (!pkg.main ||
        (typeof pkg.main !== 'string') ||
        (pkg.main && !pkg.main.match(regex))) {
@@ -61,7 +75,7 @@ class ModuleImporter {
       if (!resolved) {
         resolve();
       } else {
-        if (url.match(/\.css$/g)) {
+        if (url.match(/\.css$/)) {
           fs.readFile(url, 'utf8', (err, contents) => {
             if (err) {
               reject(err);
