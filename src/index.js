@@ -13,11 +13,10 @@ class ModuleImporter {
   }
 
   resolve({ url, prev }) {
-    
-    if (url.substring(0, 1) === '~'){ //tilde supporter for jetBrains IDE
-      url = url.substring(1);
+    if (url.substring(0, 1) === '~') { // tilde supporter for jetBrains IDE
+      let url = url.substring(1);
     }
-    
+
     const fullPath = prev === 'stdin' ? url : path.resolve(path.dirname(prev), url);
     const extname = path.extname(fullPath);
 
