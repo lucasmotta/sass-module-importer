@@ -13,6 +13,9 @@ class ModuleImporter {
   }
 
   resolve({ url, prev }) {
+    if (url.substring(0, 1) === '~') { // tilde supporter for jetBrains IDE
+      url = url.substring(1); // eslint-disable-line no-param-reassign
+    }
     const fullPath = prev === 'stdin' ? url : path.resolve(path.dirname(prev), url);
     const extname = path.extname(fullPath);
 
