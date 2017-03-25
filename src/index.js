@@ -57,6 +57,7 @@ class ModuleImporter {
     if (!pkg.main) {
       pkg.main = pkg.style || pkg['main.scss'] || pkg['main.sass'] || 'index.css';
     }
+    pkg.main = pkg.main.replace(/^\//, '');
     return pkg;
   }
 
